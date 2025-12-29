@@ -1,0 +1,333 @@
+{
+  "name": "Resume chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        144
+      ],
+      "id": "a6993389-f409-4dd8-a453-42746607aad7",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        176
+      ],
+      "id": "68ecca81-5fc6-43b5-bb9f-f517b60b6776",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "SAq63j6xpiIiL1wz",
+          "name": "resume"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 400,
+        "chunkOverlap": 80,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        192,
+        336
+      ],
+      "id": "eeed5f57-2645-443a-8c72-e76d5e26c346",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant where you get retrieved documents for a cv, you are asked some questions about this candidate and you have to answer baes on the information you got from the documents."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        752,
+        64
+      ],
+      "id": "f9ea1c67-53e4-4e27-96d2-9ec93c5cb013",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Answer questions",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "resume",
+          "mode": "list",
+          "cachedResultName": "resume"
+        },
+        "options": {
+          "pineconeNamespace": "={{ $json.body.sessionId }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        304
+      ],
+      "id": "a1f031fa-4305-4700-9d02-1324ac6113bf",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "HU9ymnsUQDrf7Biy",
+          "name": "resume"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        464
+      ],
+      "id": "54b75972-dbb8-4271-b700-6a528fa74973",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "SAq63j6xpiIiL1wz",
+          "name": "resume"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        752,
+        208
+      ],
+      "id": "2e831f6e-8dba-4de4-b752-89e6a9cfbcc3",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XX1Rw9JpX49bOSNU",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "37ddfe72-2304-485c-a797-8bdd83b5de29",
+        "options": {
+          "binaryPropertyName": "session_id"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -64,
+        -64
+      ],
+      "id": "208bbb0a-4995-44aa-a998-45642394e494",
+      "name": "Get pdf",
+      "webhookId": "37ddfe72-2304-485c-a797-8bdd83b5de29"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b7cf2a61-b41d-4e63-b672-c023d7a0d0e6",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        64
+      ],
+      "id": "e03633f2-5391-4393-8238-a8b674c87722",
+      "name": "Get message",
+      "webhookId": "b7cf2a61-b41d-4e63-b672-c023d7a0d0e6"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "resume",
+          "mode": "list",
+          "cachedResultName": "resume"
+        },
+        "embeddingBatchSize": 16,
+        "options": {
+          "pineconeNamespace": "={{ $json.body.sessionId }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        -80
+      ],
+      "id": "4175b70c-bbb3-4c16-9463-2fc0260cdb0b",
+      "name": "Store chunks",
+      "credentials": {
+        "pineconeApi": {
+          "id": "HU9ymnsUQDrf7Biy",
+          "name": "resume"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1104,
+        64
+      ],
+      "id": "bdf27fc1-3e58-4376-a8e4-c646e2b7a056",
+      "name": "Send message"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Store chunks",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store chunks",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get pdf": {
+      "main": [
+        [
+          {
+            "node": "Store chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "832080bc-b359-4d00-8d8c-2113f4c75631",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "24a20065db1dc486e70396a238901a90c679ce4ced16c36ce65a9041e23dd025"
+  },
+  "id": "SHrnQkvTpT7xucPJ",
+  "tags": []
+}
