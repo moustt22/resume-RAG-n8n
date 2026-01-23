@@ -34,6 +34,7 @@ Session-based vector isolation prevents document mixing.
 
 ## Demo
 https://chatwithyourresume.lovable.app
+Demo may not be working when n8n free trial ends
 
 ## Notes
 Each session uses its own vector namespace to ensure isolation.
